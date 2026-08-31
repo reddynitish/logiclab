@@ -208,6 +208,23 @@ describe("wiring problems are reported, never guessed", () => {
     expect(result.values["out"]).toBe(0);
   });
 
+  it("never throws on an unrecognized component type — degrades to a reported issue", () => {
+    // Regression test: `type` is ultimately agent-supplied data (WebMCP's add_component
+    // tool), so a value outside GateType must never reach an unguarded lookup/throw.
+    const circuit = {
+      components: [
+        comp("a", "INPUT", 1),
+        { id: "bad", type: "NOT_A_REAL_GATE" as unknown as GateType, position: { x: 0, y: 0 } },
+        comp("out", "OUTPUT"),
+      ],
+      wires: [wire("w1", "a", "bad", 0), wire("w2", "bad", "out", 0)],
+    };
+    expect(() => simulate(circuit)).not.toThrow();
+    const result = simulate(circuit);
+    expect(result.issues.some((i) => i.type === "unknown-type")).toBe(true);
+    expect(result.values["bad"]).toBe(0);
+  });
+
   it("flags two wires driving the same input port", () => {
     const circuit: Circuit = {
       components: [comp("a", "INPUT", 1), comp("b", "INPUT", 0), comp("g", "AND"), comp("out", "OUTPUT")],

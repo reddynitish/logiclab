@@ -92,6 +92,16 @@ export function WebMCPTools() {
       required: ["type", "x", "y"],
     } as const,
     execute: async ({ type, x, y, label }: { type: GateType; x: number; y: number; label?: string }) => {
+      // The declared JSON-Schema `enum` documents valid values but isn't enforced by the
+      // caller — re-check here so a hallucinated/mistyped type gets a clean, actionable
+      // error instead of ever reaching the store (simulate() also defends against this
+      // independently, but the tool boundary is where a useful message belongs).
+      if (!GATE_TYPES.includes(type)) {
+        return { ok: false, error: `Unknown type "${type}". Valid types: ${GATE_TYPES.join(", ")}.` };
+      }
+      if (typeof x !== "number" || typeof y !== "number" || !Number.isFinite(x) || !Number.isFinite(y)) {
+        return { ok: false, error: "x and y must be finite numbers." };
+      }
       const id = useCircuitStore.getState().addComponent(type, { x, y }, label);
       useCircuitStore.getState().markAiTouched([id], []);
       return { ok: true, id };
@@ -115,6 +125,9 @@ export function WebMCPTools() {
     } as const,
     execute: async (input: { id: string; x?: number; y?: number; label?: string; inputValue?: Bit }) => {
       const { id, x, y, label, inputValue } = input;
+      if (inputValue !== undefined && inputValue !== 0 && inputValue !== 1) {
+        return { ok: false, error: `inputValue must be 0 or 1, got ${inputValue}.` };
+      }
       const patch: { position?: { x: number; y: number }; label?: string; inputValue?: Bit } = {};
       if (x !== undefined && y !== undefined) patch.position = { x, y };
       if (label !== undefined) patch.label = label;
@@ -167,7 +180,12 @@ export function WebMCPTools() {
       properties: { id: { type: "string" }, value: { type: "integer", enum: [0, 1] } },
       required: ["id", "value"],
     } as const,
-    execute: async ({ id, value }: { id: string; value: Bit }) => useCircuitStore.getState().setInput(id, value),
+    execute: async ({ id, value }: { id: string; value: Bit }) => {
+      if (value !== 0 && value !== 1) {
+        return { ok: false, error: `value must be 0 or 1, got ${value}.` };
+      }
+      return useCircuitStore.getState().setInput(id, value);
+    },
   });
 
   useWebMCP({

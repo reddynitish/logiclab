@@ -2,7 +2,7 @@ import type { Bit, Circuit, CircuitComponent, GateType, Wire } from "./types";
 import { GATE_INPUT_COUNT } from "./types";
 
 export interface SimIssue {
-  type: "cycle" | "floating-input" | "multiple-drivers" | "no-output";
+  type: "cycle" | "floating-input" | "multiple-drivers" | "no-output" | "unknown-type";
   message: string;
   componentIds: string[];
   wireIds: string[];
@@ -31,7 +31,10 @@ function evalGate(type: GateType, inputs: Bit[]): Bit {
     case "NOR":
       return inputs[0] || inputs[1] ? 0 : 1;
     default:
-      throw new Error(`evalGate called on non-gate type: ${type}`);
+      // Unreachable for any well-typed GateType — evaluate() below never calls this for
+      // types outside GATE_INPUT_COUNT, so this only guards against a future gate type
+      // being added to the union without an evalGate case.
+      return 0;
   }
 }
 
@@ -117,6 +120,20 @@ export function simulate(circuit: Circuit): SimulationResult {
     const comp = byId.get(id)!;
     if (comp.type === "INPUT") {
       values[id] = comp.inputValue ?? 0;
+      continue;
+    }
+    // Defense-in-depth: `type` ultimately comes from data (the WebMCP add_component tool
+    // accepts a caller-supplied string), so a value outside GateType must degrade to a
+    // reported issue rather than an out-of-bounds lookup / thrown exception reaching the
+    // render tree — the tool layer also validates this, but simulate() never trusts it.
+    if (!(comp.type in GATE_INPUT_COUNT)) {
+      issues.push({
+        type: "unknown-type",
+        message: `Component ${id} has unrecognized type "${comp.type}"; treated as producing LOW.`,
+        componentIds: [id],
+        wireIds: [],
+      });
+      values[id] = 0;
       continue;
     }
     const portCount = GATE_INPUT_COUNT[comp.type];

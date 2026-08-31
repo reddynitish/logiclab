@@ -79,3 +79,33 @@ kbd {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-tertiary);
 }
+
+.crash-screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  text-align: center;
+  padding: var(--space-4);
+  background: var(--bg-app);
+}
+
+.crash-screen p {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  max-width: 480px;
+}
+
+.crash-screen button {
+  margin-top: var(--space-3);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--signal-high);
+  color: var(--text-on-accent);
+  font-weight: 600;
+  cursor: pointer;
+}

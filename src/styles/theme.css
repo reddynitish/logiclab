@@ -22,7 +22,7 @@
   /* --- text --- */
   --text-primary: #e7e9f3;
   --text-secondary: #9aa0b8;
-  --text-tertiary: #5c6180;
+  --text-tertiary: #8388a8; /* ~5.3:1 on --bg-panel, ~5.5:1 on --bg-app — WCAG AA for normal text */
   --text-on-accent: #06070b;
 
   /* --- semantic signal colors --- */
