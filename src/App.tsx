@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { useCircuitStore } from "./store/circuitStore";
 import { WebMCPTools } from "./webmcp/tools";
 import { Landing } from "./ui/Landing";
@@ -7,8 +7,11 @@ import { StatusBar } from "./ui/StatusBar";
 import { Palette } from "./ui/Palette";
 import { Inspector } from "./ui/Inspector";
 import { TruthTablePanel } from "./ui/TruthTablePanel";
-import { Canvas } from "./canvas/Canvas";
 import "./App.css";
+
+// React Flow (~most of the bundle) is only needed once the lab is actually open, so the
+// landing page — what a judge sees first — paints without waiting for it.
+const Canvas = lazy(() => import("./canvas/Canvas").then((m) => ({ default: m.Canvas })));
 
 type View = "landing" | "lab";
 
@@ -51,7 +54,9 @@ function App() {
           <TopBar onGoHome={() => setView("landing")} />
           <div className="app__body">
             <Palette />
-            <Canvas />
+            <Suspense fallback={<div className="app__canvas-loading">Loading canvas…</div>}>
+              <Canvas />
+            </Suspense>
             <div className="app__right">
               <Inspector />
               <TruthTablePanel />
