@@ -1,32 +1,110 @@
-# React + TypeScript + Vite
+# LogicLab
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+**Build circuits with your AI.**
 
-Currently, two official plugins are available:
+LogicLab is a digital logic workspace where a student and an AI agent work on the *same live circuit* — the human drags gates and wires on a canvas, the agent manipulates the exact same canvas through [WebMCP](https://webmachinelearning.github.io/webmcp/), and both sides see every change instantly. Built for the [OpenAI WebMCP Challenge](https://openai.com/webmcp-challenge/).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Live app:** https://reddynitish.github.io/logiclab/
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```
+Ask your agent: "Build and test a half adder."
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+---
+
+## The problem
+
+Wiring a circuit by hand is slow and the failure mode is opaque: a student toggles inputs one at a time, watches an LED that's the wrong color, and has no fast way to find *which* gate or wire is wrong. A chatbot bolted onto a circuit simulator doesn't fix this — it can talk about Boolean algebra, but it can't touch the circuit on your screen.
+
+## The solution
+
+LogicLab exposes the circuit itself as a set of WebMCP tools: `add_component`, `connect_components`, `set_input`, `simulate`, `generate_truth_table`, `validate_circuit`, `highlight_component`, and more. An agent (ChatGPT, or any WebMCP-aware client) doesn't describe changes — it *makes* them, on the same `zustand` store the canvas renders from. Move a gate with your mouse and the agent's next `get_circuit_state` call sees the new position. Have the agent build a full adder and it appears on your screen, gate by gate, wire by wire, with a brief violet pulse marking exactly what it just touched.
+
+That shared, live state — not a chat transcript describing a circuit — is the thing a chatbot-next-to-a-simulator can't do.
+
+## Demo scenarios
+
+- **Build** — "Build a half adder." The agent places an XOR and an AND gate, wires both inputs to both gates, wires Sum and Carry to outputs, then calls `generate_truth_table` to prove all 4 rows are correct.
+- **Build more** — "Build a full adder." Same idea, 10 components, 12 wires, tested and left on the canvas for you to keep experimenting with.
+- **Debug** — Wire something wrong yourself, then ask "why isn't this working?" The agent reads the circuit, runs the truth table, spots the mismatching rows, calls `highlight_component` to point at the faulty gate with a plain-English reason, and can fix it if you ask.
+- **Validate** — "Does my circuit implement XOR?" `validate_circuit` runs all 4 input combinations through a hand-written, deterministic reference implementation of XOR and reports the exact rows that disagree — never an LLM's guess at Boolean algebra.
+
+## Why WebMCP, specifically
+
+Digital logic is deterministic. Every gate evaluation, every truth table, every "does this implement XOR" check in LogicLab is plain TypeScript (`src/logic/`), unit-tested, and never delegated to an LLM. WebMCP is the layer that lets an agent *act* on that deterministic model — read exact structured state, make exact structured edits — instead of reasoning about a textual description of it and hoping the description was complete.
+
+## Features
+
+**Human-first editor**
+- Drag gates from the palette onto a canvas; wire them by dragging between ports.
+- Toggle inputs, watch signals propagate and light up live.
+- Move, relabel, and delete components and wires; undo/redo; zoom/pan.
+- One-click truth table generation and validation against a known Boolean function.
+- Six built-in examples: AND, XOR, half adder, full adder, 2:1 multiplexer, 2-to-4 decoder.
+- Save/load a circuit to `localStorage`.
+
+**Agent-first tools (WebMCP)** — see [`src/webmcp/tools.tsx`](src/webmcp/tools.tsx)
+
+| Tool | Purpose |
+|---|---|
+| `get_circuit_state` | Read every component, wire, and live signal value. |
+| `list_examples` / `load_example` | Discover and load a built-in circuit. |
+| `add_component` / `update_component` / `remove_component` | Place, move/relabel/retoggle, or delete a gate/terminal. |
+| `connect_components` / `disconnect_components` | Wire or unwire two components. |
+| `set_input` | Drive an INPUT high or low. |
+| `simulate` | Recompute every signal and report wiring issues (cycles, floating inputs, doubled drivers). |
+| `generate_truth_table` | Exercise every input combination at once. |
+| `validate_circuit` | Compare against a known function (AND…FULL_ADDER) with exact failing rows. |
+| `highlight_component` / `clear_highlights` | Point at specific gates/wires while explaining a problem. |
+| `reset_circuit` | Clear the canvas. |
+
+Every tool reads and writes the same store the canvas renders from — there is no separate "agent's copy" of the circuit to fall out of sync.
+
+## Architecture
+
+```
+src/
+  logic/         deterministic circuit model + simulator + validators (unit-tested, zero UI dependency)
+  store/         zustand store — single source of truth for both the canvas and the WebMCP tools
+  webmcp/        WebMCP tool registration (useWebMCP from @mcp-b/react-webmcp)
+  examples/      built-in circuits
+  canvas/        React Flow canvas, custom gate nodes, custom animated wire edges
+  ui/            palette, inspector, truth table panel, top/status bars, landing page
+```
+
+No backend. The entire app — human editor and agent tools alike — runs client-side; `document.modelContext` (installed by the [`@mcp-b/global`](https://github.com/WebMCP-org/npm-packages) WebMCP polyfill on browsers without native support yet) is the only integration point an external agent needs.
+
+### Reused open source
+
+- [`@xyflow/react`](https://reactflow.dev/) (MIT) — canvas, pan/zoom, node/edge rendering.
+- [`zustand`](https://github.com/pmndrs/zustand) (MIT) — state store.
+- [`@mcp-b/global`](https://github.com/WebMCP-org/npm-packages) / [`@mcp-b/react-webmcp`](https://github.com/WebMCP-org/npm-packages) (MIT) — WebMCP polyfill and React hook bindings implementing the [W3C WebMCP draft](https://webmachinelearning.github.io/webmcp/).
+- `nanoid`, `clsx` (MIT) — small utilities.
+
+## Local setup
+
+```bash
+npm install
+npm run dev       # http://localhost:5173
+```
+
+## Testing
+
+```bash
+npx vitest run    # 52+ tests: every gate, half/full adder, cycle/floating-input/multiple-driver
+                   # detection, truth-table generation, and known-function validation
+npx tsc -b --noEmit
+npm run build
+```
+
+## Deployment
+
+Static build (`npm run build`) deployed to GitHub Pages via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) on every push to `main`. HTTPS is required for WebMCP (`[SecureContext]`); GitHub Pages provides it by default.
+
+## Hackathon context
+
+Built for the [OpenAI WebMCP Challenge](https://openai.com/webmcp-challenge/) (Sept 2026). See [`/submission`](submission/) for the project description, demo script, and judge cheat sheet.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

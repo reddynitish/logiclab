@@ -1,18 +1,24 @@
 {
   "name": "logiclab",
+  "description": "A digital logic workspace where you and your AI agent build, test, debug, and understand circuits together, via WebMCP.",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/reddynitish/logiclab"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "test": "vitest run",
     "preview": "vite preview"
   },
   "dependencies": {
     "@mcp-b/global": "^5.1.0",
     "@mcp-b/react-webmcp": "^5.1.0",
-    "@mcp-b/webmcp-polyfill": "^5.1.0",
     "@xyflow/react": "^12.11.5",
     "clsx": "^2.1.1",
     "nanoid": "^6.0.1",

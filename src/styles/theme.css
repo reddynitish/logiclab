@@ -1,0 +1,88 @@
+/* LogicLab design tokens. Dark, focused, engineering-tool aesthetic.
+   Every color used elsewhere in the app should trace back to one of these
+   custom properties so the semantic meaning (state vs. selection vs. AI vs.
+   debug) stays consistent everywhere it appears. */
+
+:root {
+  color-scheme: dark;
+
+  /* --- surfaces --- */
+  --bg-canvas: #0a0b10;
+  --bg-canvas-grid: #1b1e29;
+  --bg-app: #0d0e14;
+  --bg-panel: #12131b;
+  --bg-panel-elevated: #181a24;
+  --bg-panel-hover: #1f212d;
+  --bg-inset: #0e0f16;
+
+  --border-subtle: #262838;
+  --border-strong: #383b52;
+  --border-hairline: #1d1f2b;
+
+  /* --- text --- */
+  --text-primary: #e7e9f3;
+  --text-secondary: #9aa0b8;
+  --text-tertiary: #5c6180;
+  --text-on-accent: #06070b;
+
+  /* --- semantic signal colors --- */
+  --signal-low: #4b5170;
+  --signal-low-dim: #333850;
+  --signal-high: #2ee6c8;
+  --signal-high-glow: rgba(46, 230, 200, 0.55);
+  --signal-high-soft: rgba(46, 230, 200, 0.12);
+
+  /* --- AI-touched accent (distinct from HIGH signal) --- */
+  --ai-accent: #a78bfa;
+  --ai-accent-glow: rgba(167, 139, 250, 0.65);
+  --ai-accent-soft: rgba(167, 139, 250, 0.14);
+
+  /* --- debug / problem highlight --- */
+  --highlight: #f5a524;
+  --highlight-glow: rgba(245, 165, 36, 0.55);
+  --highlight-soft: rgba(245, 165, 36, 0.14);
+
+  /* --- danger / issues --- */
+  --danger: #f0475f;
+  --danger-soft: rgba(240, 71, 95, 0.14);
+
+  /* --- selection --- */
+  --selection: #4f8cff;
+  --selection-glow: rgba(79, 140, 255, 0.5);
+  --selection-soft: rgba(79, 140, 255, 0.12);
+
+  /* --- typography --- */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+  --text-xs: 11px;
+  --text-sm: 12.5px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 28px;
+
+  /* --- spacing scale --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* --- radius scale --- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 999px;
+
+  /* --- elevation --- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+
+  --topbar-h: 52px;
+  --statusbar-h: 30px;
+}
