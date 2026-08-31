@@ -1,0 +1,153 @@
+.truth-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.truth-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: var(--text-md);
+  cursor: pointer;
+}
+.truth-panel__chevron {
+  color: var(--text-tertiary);
+  font-size: var(--text-lg);
+}
+
+.truth-panel__body {
+  padding: 0 var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow: auto;
+  min-height: 0;
+}
+
+.truth-panel__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.truth-panel__generate {
+  background: var(--selection-soft);
+  border: 1px solid var(--selection);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+.truth-panel__generate:hover {
+  background: var(--selection);
+  color: var(--text-on-accent);
+}
+
+.truth-panel__validate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+.truth-panel__validate select {
+  background: var(--bg-inset);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  color: var(--text-primary);
+}
+
+.truth-panel__banner {
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+}
+.truth-panel__banner p {
+  margin-top: var(--space-1);
+  color: var(--text-secondary);
+}
+.truth-panel__banner.is-pass {
+  background: var(--signal-high-soft);
+  border: 1px solid var(--signal-high);
+  color: var(--signal-high);
+}
+.truth-panel__banner.is-fail {
+  background: var(--danger-soft);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+
+.truth-panel__issues {
+  background: var(--highlight-soft);
+  border: 1px solid var(--highlight);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+.truth-panel__issues p {
+  margin: 2px 0;
+}
+
+.truth-panel__empty {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.truth-table__scroll {
+  overflow: auto;
+  max-height: 320px;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+}
+
+.truth-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+.truth-table th,
+.truth-table td {
+  padding: 5px 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-hairline);
+}
+.truth-table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-panel-elevated);
+  color: var(--text-tertiary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+}
+.truth-table td {
+  color: var(--text-secondary);
+}
+.truth-table td.is-high {
+  color: var(--signal-high);
+  font-weight: 700;
+}
+.truth-table__out-col {
+  border-left: 1px solid var(--border-subtle);
+}
+.truth-table tr.is-mismatch td {
+  background: var(--danger-soft);
+  color: var(--danger);
+}

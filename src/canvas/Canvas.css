@@ -1,0 +1,79 @@
+.lab-canvas {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  background: var(--bg-canvas);
+}
+
+.lab-canvas .react-flow__pane {
+  cursor: default;
+}
+
+.lab-canvas .react-flow__attribution {
+  display: none;
+}
+
+.lab-canvas .react-flow__controls {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.lab-canvas .react-flow__controls-button {
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-subtle);
+  fill: var(--text-secondary);
+  stroke: var(--text-secondary);
+}
+.lab-canvas .react-flow__controls-button:hover {
+  background: var(--bg-panel-hover);
+}
+.lab-canvas .react-flow__controls-button svg {
+  fill: var(--text-secondary);
+}
+
+/* Handles: small, high-contrast, easy to grab, colored by port kind. */
+.lab-canvas .react-flow__handle {
+  width: 9px;
+  height: 9px;
+  background: var(--text-tertiary);
+  border: 2px solid var(--bg-canvas);
+  border-radius: 50%;
+  transition: background 120ms ease, transform 120ms ease;
+}
+.lab-canvas .react-flow__handle:hover {
+  background: var(--selection);
+  transform: scale(1.3);
+}
+.lab-canvas .react-flow__handle-left {
+  left: -4px;
+}
+.lab-canvas .react-flow__handle-right {
+  right: -4px;
+}
+.lab-canvas .react-flow__handle-connecting {
+  background: var(--highlight);
+}
+.lab-canvas .react-flow__handle-valid {
+  background: var(--signal-high);
+}
+
+.lab-canvas__toast {
+  position: absolute;
+  top: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 20;
+  max-width: 60%;
+  text-align: center;
+}

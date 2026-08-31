@@ -1,0 +1,61 @@
+.wire-edge {
+  stroke: var(--signal-low);
+  fill: none;
+  transition: stroke 150ms ease, stroke-width 150ms ease, filter 150ms ease;
+}
+
+.wire-edge.is-high {
+  stroke: var(--signal-high);
+  filter: drop-shadow(0 0 4px var(--signal-high-glow));
+  stroke-dasharray: 6 5;
+  animation: wire-flow 700ms linear infinite;
+}
+
+@keyframes wire-flow {
+  to {
+    stroke-dashoffset: -11;
+  }
+}
+
+.wire-edge.is-selected {
+  stroke: var(--selection);
+  filter: drop-shadow(0 0 4px var(--selection-glow));
+}
+
+.wire-edge.is-highlighted {
+  stroke: var(--highlight);
+  filter: drop-shadow(0 0 6px var(--highlight-glow));
+  animation: wire-highlight-pulse 1.6s ease-in-out infinite;
+}
+
+.wire-edge.is-highlighted.is-high {
+  animation: wire-flow 700ms linear infinite, wire-highlight-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes wire-highlight-pulse {
+  0%,
+  100% {
+    stroke: var(--highlight);
+  }
+  50% {
+    stroke: var(--signal-high);
+  }
+}
+
+.wire-edge.is-ai-touched {
+  stroke: var(--ai-accent);
+  filter: drop-shadow(0 0 8px var(--ai-accent-glow));
+}
+
+.wire-edge__reason {
+  position: absolute;
+  background: var(--highlight);
+  color: var(--text-on-accent);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}

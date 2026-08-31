@@ -1,0 +1,58 @@
+.statusbar {
+  height: var(--statusbar-h);
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 0 var(--space-4);
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-subtle);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.statusbar__issues {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.statusbar__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.statusbar__issues.is-ok {
+  color: var(--signal-high);
+}
+.statusbar__issues.is-ok .statusbar__dot {
+  background: var(--signal-high);
+  box-shadow: 0 0 6px var(--signal-high-glow);
+}
+.statusbar__issues.is-warn {
+  color: var(--highlight);
+}
+.statusbar__issues.is-warn .statusbar__dot {
+  background: var(--highlight);
+  box-shadow: 0 0 6px var(--highlight-glow);
+}
+
+.statusbar__example {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.statusbar__hints {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.statusbar__hints kbd {
+  background: var(--bg-inset);
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 10px;
+  color: var(--text-secondary);
+}

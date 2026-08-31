@@ -29,7 +29,7 @@ function InputNodeImpl({ id, data, selected }: NodeProps<LogicFlowNode>) {
       <div className="input-node__label">{label || "IN"}</div>
       <button
         type="button"
-        className={clsx("input-node__switch", high && "is-high")}
+        className={clsx("input-node__switch", "nodrag", high && "is-high")}
         onClick={onToggle}
         aria-pressed={high}
         aria-label={`Toggle input ${label ?? id}, currently ${high ? "HIGH" : "LOW"}`}

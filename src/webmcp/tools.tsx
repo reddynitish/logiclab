@@ -25,7 +25,6 @@ function labelsOf(store: ReturnType<typeof useCircuitStore.getState>) {
 export function WebMCPTools() {
   useWebMCP({
     name: "get_circuit_state",
-    title: "Get circuit state",
     description:
       "Read the full current circuit: every component (gates, inputs, outputs) with its id, type, position, label and value, every wire, and the live simulated signal on every component and wire. Call this first, before making any change, to see what's already on the canvas.",
     inputSchema: { type: "object", properties: {} } as const,
@@ -46,7 +45,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "list_examples",
-    title: "List example circuits",
     description: "List the built-in example circuits (id, name, description) available to load_example.",
     inputSchema: { type: "object", properties: {} } as const,
     annotations: { readOnlyHint: true },
@@ -55,7 +53,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "load_example",
-    title: "Load example circuit",
     description: "Replace the current circuit on the canvas with one of the built-in examples. Use list_examples to see valid ids.",
     inputSchema: {
       type: "object",
@@ -82,7 +79,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "add_component",
-    title: "Add gate or terminal",
     description:
       "Place a new component on the canvas: an INPUT (a toggleable source bit), an OUTPUT (a display terminal), or a gate (AND, OR, NOT, XOR, NAND, NOR). Returns the new component's id, which you'll use with connect_components.",
     inputSchema: {
@@ -104,7 +100,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "update_component",
-    title: "Move, relabel, or retoggle a component",
     description:
       "Update an existing component: reposition it (x/y), rename it (label), or — for INPUT components only — set its value (inputValue: 0 or 1).",
     inputSchema: {
@@ -132,7 +127,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "remove_component",
-    title: "Remove a component",
     description: "Delete a component from the canvas. Any wires attached to it are removed too.",
     inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } as const,
     execute: async ({ id }: { id: string }) => useCircuitStore.getState().removeComponent(id),
@@ -140,7 +134,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "connect_components",
-    title: "Wire two components together",
     description:
       "Connect the output of one component to an input port of another. Gates with two inputs (AND/OR/XOR/NAND/NOR) use toPort 0 or 1; NOT and OUTPUT have a single input port, toPort 0. An input port can only carry one wire — disconnect_components first if it's already driven.",
     inputSchema: {
@@ -161,7 +154,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "disconnect_components",
-    title: "Remove a wire",
     description: "Delete a single wire by id (from get_circuit_state's wires list).",
     inputSchema: { type: "object", properties: { wireId: { type: "string" } }, required: ["wireId"] } as const,
     execute: async ({ wireId }: { wireId: string }) => useCircuitStore.getState().disconnect(wireId),
@@ -169,7 +161,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "set_input",
-    title: "Set an input bit",
     description: "Set an INPUT component to 0 (LOW) or 1 (HIGH).",
     inputSchema: {
       type: "object",
@@ -181,7 +172,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "simulate",
-    title: "Run the simulation",
     description:
       "Recompute every signal in the circuit from the current INPUT values and return the resulting value on each component and wire, plus any wiring issues found (feedback loops, floating inputs, doubled drivers). Call after making changes to see the effect.",
     inputSchema: { type: "object", properties: {} } as const,
@@ -195,7 +185,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "generate_truth_table",
-    title: "Generate the truth table",
     description:
       "Exercise every combination of the circuit's INPUT components (2^n rows) and report the resulting OUTPUT values for each — the deterministic way to see everything a circuit does at once, instead of toggling inputs one at a time.",
     inputSchema: { type: "object", properties: {} } as const,
@@ -209,7 +198,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "validate_circuit",
-    title: "Validate against a known Boolean function",
     description:
       "Check whether the circuit correctly implements a named function (AND, OR, NOT, XOR, NAND, NOR, HALF_ADDER, FULL_ADDER) across every input combination. The comparison is exact, code-computed truth-table matching — not a guess — and returns the specific input rows where the circuit's behavior diverges from the expected function, so you can pinpoint what's wrong.",
     inputSchema: {
@@ -224,7 +212,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "highlight_component",
-    title: "Highlight components or wires",
     description:
       "Draw the student's eye to specific components and/or wires with a reason string (e.g. 'this AND gate should be an OR gate'). Used while diagnosing a broken circuit. Call clear_highlights when done.",
     inputSchema: {
@@ -252,7 +239,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "clear_highlights",
-    title: "Clear all highlights",
     description: "Remove every debugging highlight currently shown on the canvas.",
     inputSchema: { type: "object", properties: {} } as const,
     execute: async () => {
@@ -263,7 +249,6 @@ export function WebMCPTools() {
 
   useWebMCP({
     name: "reset_circuit",
-    title: "Clear the canvas",
     description: "Remove every component and wire, returning to a blank canvas.",
     inputSchema: { type: "object", properties: {} } as const,
     execute: async () => {
