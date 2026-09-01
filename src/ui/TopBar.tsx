@@ -3,6 +3,7 @@ import { useCircuitStore } from "../store/circuitStore";
 import { EXAMPLES } from "../examples";
 import type { Circuit } from "../logic/types";
 import { LogoMark, IconUndo, IconRedo, IconSave, IconLoad, IconReset } from "./icons";
+import { AgentPanel } from "./AgentPanel";
 import "./TopBar.css";
 
 const STORAGE_KEY = "logiclab:circuit";
@@ -106,6 +107,7 @@ export function TopBar({ onGoHome }: { onGoHome: () => void }) {
       </div>
 
       {flash && <span className="topbar__flash">{flash}</span>}
+      <AgentPanel />
     </header>
   );
 }

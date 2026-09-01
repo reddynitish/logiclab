@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { useWebMCP } from "@mcp-b/react-webmcp";
 import { useCircuitStore } from "../store/circuitStore";
+import { useAgentActivityStore } from "../store/agentActivityStore";
 import { simulate } from "../logic/simulator";
 import { generateTruthTable } from "../logic/simulator";
 import { validateAgainstKnownFunction, type KnownFunction } from "../logic/validators";
@@ -8,11 +10,44 @@ import type { Bit, GateType } from "../logic/types";
 
 const GATE_TYPES: GateType[] = ["INPUT", "OUTPUT", "AND", "OR", "NOT", "XOR", "NAND", "NOR"];
 const KNOWN_FUNCTIONS: KnownFunction[] = ["AND", "OR", "NOT", "XOR", "NAND", "NOR", "HALF_ADDER", "FULL_ADDER"];
+const EXPECTED_TOOL_COUNT = 15;
 
 function labelsOf(store: ReturnType<typeof useCircuitStore.getState>) {
   const labels: Record<string, string> = {};
   for (const c of store.circuit.components) labels[c.id] = c.label ?? c.id;
   return labels;
+}
+
+function summarize(value: unknown): string {
+  const s = typeof value === "string" ? value : JSON.stringify(value);
+  if (!s) return "";
+  return s.length > 120 ? `${s.slice(0, 117)}...` : s;
+}
+
+/**
+ * Wraps a tool's execute function so every call — successful or not — lands in the
+ * agent-activity feed the UI renders (see AgentPanel.tsx). This is what turns "the AI
+ * says it changed the circuit" into something a human can watch happen in real time,
+ * and it's driven by the exact calls the WebMCP runtime makes, not a mocked log.
+ */
+function withLog<A, R>(name: string, fn: (args: A) => Promise<R>) {
+  return async (args: A): Promise<R> => {
+    const argsSummary = summarize(args);
+    try {
+      const result = await fn(args);
+      const ok = !(result && typeof result === "object" && "ok" in result && (result as { ok: unknown }).ok === false);
+      useAgentActivityStore.getState().logCall({ tool: name, argsSummary, ok, resultSummary: summarize(result) });
+      return result;
+    } catch (err) {
+      useAgentActivityStore.getState().logCall({
+        tool: name,
+        argsSummary,
+        ok: false,
+        resultSummary: err instanceof Error ? err.message : String(err),
+      });
+      throw err;
+    }
+  };
 }
 
 /**
@@ -29,7 +64,7 @@ export function WebMCPTools() {
       "Read the full current circuit: every component (gates, inputs, outputs) with its id, type, position, label and value, every wire, and the live simulated signal on every component and wire. Call this first, before making any change, to see what's already on the canvas.",
     inputSchema: { type: "object", properties: {} } as const,
     annotations: { readOnlyHint: true },
-    execute: async () => {
+    execute: withLog("get_circuit_state", async () => {
       const state = useCircuitStore.getState();
       const sim = simulate(state.circuit);
       return {
@@ -40,7 +75,7 @@ export function WebMCPTools() {
         issues: sim.issues,
         exampleName: state.exampleName,
       };
-    },
+    }),
   });
 
   useWebMCP({
@@ -48,7 +83,7 @@ export function WebMCPTools() {
     description: "List the built-in example circuits (id, name, description) available to load_example.",
     inputSchema: { type: "object", properties: {} } as const,
     annotations: { readOnlyHint: true },
-    execute: async () => EXAMPLES.map(({ id, name, description }) => ({ id, name, description })),
+    execute: withLog("list_examples", async () => EXAMPLES.map(({ id, name, description }) => ({ id, name, description }))),
   });
 
   useWebMCP({
@@ -59,7 +94,7 @@ export function WebMCPTools() {
       properties: { exampleId: { type: "string", description: "Example id, e.g. 'half-adder'." } },
       required: ["exampleId"],
     } as const,
-    execute: async ({ exampleId }: { exampleId: string }) => {
+    execute: withLog("load_example", async ({ exampleId }: { exampleId: string }) => {
       const example = getExample(exampleId);
       if (!example) {
         return {
@@ -74,7 +109,7 @@ export function WebMCPTools() {
         circuit.wires.map((w) => w.id),
       );
       return { ok: true, name: example.name, componentCount: circuit.components.length };
-    },
+    }),
   });
 
   useWebMCP({
@@ -91,21 +126,24 @@ export function WebMCPTools() {
       },
       required: ["type", "x", "y"],
     } as const,
-    execute: async ({ type, x, y, label }: { type: GateType; x: number; y: number; label?: string }) => {
-      // The declared JSON-Schema `enum` documents valid values but isn't enforced by the
-      // caller — re-check here so a hallucinated/mistyped type gets a clean, actionable
-      // error instead of ever reaching the store (simulate() also defends against this
-      // independently, but the tool boundary is where a useful message belongs).
-      if (!GATE_TYPES.includes(type)) {
-        return { ok: false, error: `Unknown type "${type}". Valid types: ${GATE_TYPES.join(", ")}.` };
-      }
-      if (typeof x !== "number" || typeof y !== "number" || !Number.isFinite(x) || !Number.isFinite(y)) {
-        return { ok: false, error: "x and y must be finite numbers." };
-      }
-      const id = useCircuitStore.getState().addComponent(type, { x, y }, label);
-      useCircuitStore.getState().markAiTouched([id], []);
-      return { ok: true, id };
-    },
+    execute: withLog(
+      "add_component",
+      async ({ type, x, y, label }: { type: GateType; x: number; y: number; label?: string }) => {
+        // The declared JSON-Schema `enum` documents valid values but isn't enforced by the
+        // caller — re-check here so a hallucinated/mistyped type gets a clean, actionable
+        // error instead of ever reaching the store (simulate() also defends against this
+        // independently, but the tool boundary is where a useful message belongs).
+        if (!GATE_TYPES.includes(type)) {
+          return { ok: false, error: `Unknown type "${type}". Valid types: ${GATE_TYPES.join(", ")}.` };
+        }
+        if (typeof x !== "number" || typeof y !== "number" || !Number.isFinite(x) || !Number.isFinite(y)) {
+          return { ok: false, error: "x and y must be finite numbers." };
+        }
+        const id = useCircuitStore.getState().addComponent(type, { x, y }, label);
+        useCircuitStore.getState().markAiTouched([id], []);
+        return { ok: true, id };
+      },
+    ),
   });
 
   useWebMCP({
@@ -123,26 +161,29 @@ export function WebMCPTools() {
       },
       required: ["id"],
     } as const,
-    execute: async (input: { id: string; x?: number; y?: number; label?: string; inputValue?: Bit }) => {
-      const { id, x, y, label, inputValue } = input;
-      if (inputValue !== undefined && inputValue !== 0 && inputValue !== 1) {
-        return { ok: false, error: `inputValue must be 0 or 1, got ${inputValue}.` };
-      }
-      const patch: { position?: { x: number; y: number }; label?: string; inputValue?: Bit } = {};
-      if (x !== undefined && y !== undefined) patch.position = { x, y };
-      if (label !== undefined) patch.label = label;
-      if (inputValue !== undefined) patch.inputValue = inputValue;
-      const result = useCircuitStore.getState().updateComponent(id, patch);
-      if (result.ok) useCircuitStore.getState().markAiTouched([id], []);
-      return result;
-    },
+    execute: withLog(
+      "update_component",
+      async (input: { id: string; x?: number; y?: number; label?: string; inputValue?: Bit }) => {
+        const { id, x, y, label, inputValue } = input;
+        if (inputValue !== undefined && inputValue !== 0 && inputValue !== 1) {
+          return { ok: false, error: `inputValue must be 0 or 1, got ${inputValue}.` };
+        }
+        const patch: { position?: { x: number; y: number }; label?: string; inputValue?: Bit } = {};
+        if (x !== undefined && y !== undefined) patch.position = { x, y };
+        if (label !== undefined) patch.label = label;
+        if (inputValue !== undefined) patch.inputValue = inputValue;
+        const result = useCircuitStore.getState().updateComponent(id, patch);
+        if (result.ok) useCircuitStore.getState().markAiTouched([id], []);
+        return result;
+      },
+    ),
   });
 
   useWebMCP({
     name: "remove_component",
     description: "Delete a component from the canvas. Any wires attached to it are removed too.",
     inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } as const,
-    execute: async ({ id }: { id: string }) => useCircuitStore.getState().removeComponent(id),
+    execute: withLog("remove_component", async ({ id }: { id: string }) => useCircuitStore.getState().removeComponent(id)),
   });
 
   useWebMCP({
@@ -158,18 +199,21 @@ export function WebMCPTools() {
       },
       required: ["from", "to", "toPort"],
     } as const,
-    execute: async ({ from, to, toPort }: { from: string; to: string; toPort: number }) => {
-      const result = useCircuitStore.getState().connect(from, to, toPort);
-      if (result.ok && result.wireId) useCircuitStore.getState().markAiTouched([], [result.wireId]);
-      return result;
-    },
+    execute: withLog(
+      "connect_components",
+      async ({ from, to, toPort }: { from: string; to: string; toPort: number }) => {
+        const result = useCircuitStore.getState().connect(from, to, toPort);
+        if (result.ok && result.wireId) useCircuitStore.getState().markAiTouched([], [result.wireId]);
+        return result;
+      },
+    ),
   });
 
   useWebMCP({
     name: "disconnect_components",
     description: "Delete a single wire by id (from get_circuit_state's wires list).",
     inputSchema: { type: "object", properties: { wireId: { type: "string" } }, required: ["wireId"] } as const,
-    execute: async ({ wireId }: { wireId: string }) => useCircuitStore.getState().disconnect(wireId),
+    execute: withLog("disconnect_components", async ({ wireId }: { wireId: string }) => useCircuitStore.getState().disconnect(wireId)),
   });
 
   useWebMCP({
@@ -180,12 +224,12 @@ export function WebMCPTools() {
       properties: { id: { type: "string" }, value: { type: "integer", enum: [0, 1] } },
       required: ["id", "value"],
     } as const,
-    execute: async ({ id, value }: { id: string; value: Bit }) => {
+    execute: withLog("set_input", async ({ id, value }: { id: string; value: Bit }) => {
       if (value !== 0 && value !== 1) {
         return { ok: false, error: `value must be 0 or 1, got ${value}.` };
       }
       return useCircuitStore.getState().setInput(id, value);
-    },
+    }),
   });
 
   useWebMCP({
@@ -194,11 +238,11 @@ export function WebMCPTools() {
       "Recompute every signal in the circuit from the current INPUT values and return the resulting value on each component and wire, plus any wiring issues found (feedback loops, floating inputs, doubled drivers). Call after making changes to see the effect.",
     inputSchema: { type: "object", properties: {} } as const,
     annotations: { readOnlyHint: true },
-    execute: async () => {
+    execute: withLog("simulate", async () => {
       const state = useCircuitStore.getState();
       const sim = simulate(state.circuit);
       return { values: sim.values, wireValues: sim.wireValues, issues: sim.issues, labels: labelsOf(state) };
-    },
+    }),
   });
 
   useWebMCP({
@@ -207,11 +251,11 @@ export function WebMCPTools() {
       "Exercise every combination of the circuit's INPUT components (2^n rows) and report the resulting OUTPUT values for each — the deterministic way to see everything a circuit does at once, instead of toggling inputs one at a time.",
     inputSchema: { type: "object", properties: {} } as const,
     annotations: { readOnlyHint: true },
-    execute: async () => {
+    execute: withLog("generate_truth_table", async () => {
       const state = useCircuitStore.getState();
       const table = generateTruthTable(state.circuit);
       return { ...table, labels: labelsOf(state) };
-    },
+    }),
   });
 
   useWebMCP({
@@ -224,8 +268,9 @@ export function WebMCPTools() {
       required: ["targetFunction"],
     } as const,
     annotations: { readOnlyHint: true },
-    execute: async ({ targetFunction }: { targetFunction: KnownFunction }) =>
+    execute: withLog("validate_circuit", async ({ targetFunction }: { targetFunction: KnownFunction }) =>
       validateAgainstKnownFunction(useCircuitStore.getState().circuit, targetFunction),
+    ),
   });
 
   useWebMCP({
@@ -241,39 +286,85 @@ export function WebMCPTools() {
       },
       required: ["reason"],
     } as const,
-    execute: async ({
-      componentIds = [],
-      wireIds = [],
-      reason,
-    }: {
-      componentIds?: string[];
-      wireIds?: string[];
-      reason: string;
-    }) => {
-      useCircuitStore.getState().highlight(componentIds, wireIds, reason);
-      return { ok: true };
-    },
+    execute: withLog(
+      "highlight_component",
+      async ({
+        componentIds = [],
+        wireIds = [],
+        reason,
+      }: {
+        componentIds?: string[];
+        wireIds?: string[];
+        reason: string;
+      }) => {
+        useCircuitStore.getState().highlight(componentIds, wireIds, reason);
+        return { ok: true };
+      },
+    ),
   });
 
   useWebMCP({
     name: "clear_highlights",
     description: "Remove every debugging highlight currently shown on the canvas.",
     inputSchema: { type: "object", properties: {} } as const,
-    execute: async () => {
+    execute: withLog("clear_highlights", async () => {
       useCircuitStore.getState().clearHighlights();
       return { ok: true };
-    },
+    }),
   });
 
   useWebMCP({
     name: "reset_circuit",
     description: "Remove every component and wire, returning to a blank canvas.",
     inputSchema: { type: "object", properties: {} } as const,
-    execute: async () => {
+    execute: withLog("reset_circuit", async () => {
       useCircuitStore.getState().clearCircuit();
       return { ok: true };
-    },
+    }),
   });
+
+  // Registration above is fire-and-forget (registerTool returns a Promise). Rather than
+  // trust "the component rendered" as proof, actually call the same discovery method an
+  // external agent would (document.modelContext.getTools()) and only report "Ready" once
+  // it genuinely returns every tool — polling briefly since registration can lag a render.
+  useEffect(() => {
+    let cancelled = false;
+    let attempt = 0;
+
+    async function check() {
+      if (cancelled) return;
+      if (typeof document === "undefined" || !document.modelContext) {
+        useAgentActivityStore
+          .getState()
+          .setStatus("unavailable", 0, "document.modelContext is not available in this browser/context.");
+        return;
+      }
+      try {
+        const tools = await document.modelContext.getTools();
+        if (cancelled) return;
+        if (tools.length >= EXPECTED_TOOL_COUNT) {
+          useAgentActivityStore.getState().setStatus("ready", tools.length);
+          return;
+        }
+        attempt += 1;
+        if (attempt < 10) {
+          setTimeout(check, 200);
+        } else {
+          useAgentActivityStore
+            .getState()
+            .setStatus("unavailable", tools.length, `Only ${tools.length} of ${EXPECTED_TOOL_COUNT} tools registered.`);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        useAgentActivityStore.getState().setStatus("unavailable", 0, err instanceof Error ? err.message : String(err));
+      }
+    }
+
+    check();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return null;
 }

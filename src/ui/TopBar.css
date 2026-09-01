@@ -76,7 +76,6 @@
 }
 
 .topbar__flash {
-  margin-left: auto;
   font-size: var(--text-sm);
   color: var(--signal-high);
 }
