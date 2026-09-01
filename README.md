@@ -49,6 +49,8 @@ You can also check it by hand in the browser console on the live page:
 (await document.modelContext.getTools()).length // -> 15
 ```
 
+**Advanced: verify with a real external MCP client (not just page JS).** Run LogicLab in dev mode (`npm run dev`), open it as `http://localhost:5173/?webmcp-relay=1`, and start [`@mcp-b/webmcp-local-relay`](https://docs.mcp-b.ai/packages/webmcp-local-relay/reference) (`npx @mcp-b/webmcp-local-relay`) — a third-party bridge that turns whatever a browser tab registers on `document.modelContext` into a real MCP server over stdio. Point any MCP client (Claude Desktop, Claude Code, or the SDK directly) at it and call `list_tools`/`call_tool` — LogicLab's 15 tools show up alongside the relay's own 3 management tools, fully callable, with every call also appearing in the in-app agent-activity feed. This is the exact mechanism this repo used to independently confirm discovery + invocation end-to-end (a separate MCP SDK process, over stdio, through a third-party relay, into a real browser tab) rather than relying on the page calling its own API.
+
 ## Why WebMCP, specifically
 
 Digital logic is deterministic. Every gate evaluation, every truth table, every "does this implement XOR" check in LogicLab is plain TypeScript (`src/logic/`), unit-tested, and never delegated to an LLM. WebMCP is the layer that lets an agent *act* on that deterministic model — read exact structured state, make exact structured edits — instead of reasoning about a textual description of it and hoping the description was complete.
