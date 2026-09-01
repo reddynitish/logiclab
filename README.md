@@ -29,6 +29,26 @@ That shared, live state — not a chat transcript describing a circuit — is th
 - **Debug** — Wire something wrong yourself, then ask "why isn't this working?" The agent reads the circuit, runs the truth table, spots the mismatching rows, calls `highlight_component` to point at the faulty gate with a plain-English reason, and can fix it if you ask.
 - **Validate** — "Does my circuit implement XOR?" `validate_circuit` runs all 4 input combinations through a hand-written, deterministic reference implementation of XOR and reports the exact rows that disagree — never an LLM's guess at Boolean algebra.
 
+## How to use LogicLab with an AI agent
+
+Open the [live app](https://reddynitish.github.io/logiclab/) in a **WebMCP-aware client** — today that's ChatGPT's desktop app / Atlas browser with a browsing/agent task, or Chrome with the WebMCP origin trial or `chrome://flags` experimental flag enabled. Then just ask it normally, in the same window the page is open in:
+
+```
+Build and test a half adder.
+```
+
+There's nothing to install and no API key — the moment a WebMCP-capable agent looks at the page, `document.modelContext.getTools()` returns LogicLab's 15 tools and it can start calling them. If your current browser/agent doesn't support WebMCP yet, LogicLab still works as a fully manual circuit editor — see [Features](#features) below.
+
+## How to verify WebMCP is active
+
+The lab view has a small badge in the top-right: **● WebMCP: Ready · 15 tools**. It only ever says "Ready" after the page has actually called `document.modelContext.getTools()` and confirmed all 15 came back — never assumed from the app having loaded. Click it to open a live feed of every real tool call as it happens (`Agent → add_component({"type":"AND",...}) · just now`); if you don't see entries appear while an agent is "working" on the circuit, it isn't going through WebMCP.
+
+You can also check it by hand in the browser console on the live page:
+
+```js
+(await document.modelContext.getTools()).length // -> 15
+```
+
 ## Why WebMCP, specifically
 
 Digital logic is deterministic. Every gate evaluation, every truth table, every "does this implement XOR" check in LogicLab is plain TypeScript (`src/logic/`), unit-tested, and never delegated to an LLM. WebMCP is the layer that lets an agent *act* on that deterministic model — read exact structured state, make exact structured edits — instead of reasoning about a textual description of it and hoping the description was complete.
@@ -91,8 +111,9 @@ npm run dev       # http://localhost:5173
 ## Testing
 
 ```bash
-npx vitest run    # 52+ tests: every gate, half/full adder, cycle/floating-input/multiple-driver
-                   # detection, truth-table generation, and known-function validation
+npx vitest run    # 80+ tests: every gate, half/full adder, cycle/floating-input/multiple-driver
+                   # detection, truth-table generation, known-function validation, store actions,
+                   # built-in example correctness, and the agent-activity feed
 npx tsc -b --noEmit
 npm run build
 ```

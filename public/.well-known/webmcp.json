@@ -1,0 +1,24 @@
+{
+  "name": "LogicLab",
+  "description": "A digital logic workspace where a human and an AI agent build, test, debug, and understand circuits together through WebMCP.",
+  "registration": "runtime",
+  "note": "Tools are registered at runtime via document.modelContext.registerTool() as specified by the W3C Web Machine Learning Community Group's WebMCP draft (https://webmachinelearning.github.io/webmcp/). This manifest is an informational, best-effort discovery aid — call document.modelContext.getTools() on the loaded page for the authoritative, live tool list.",
+  "toolCount": 15,
+  "tools": [
+    "get_circuit_state",
+    "list_examples",
+    "load_example",
+    "add_component",
+    "update_component",
+    "remove_component",
+    "connect_components",
+    "disconnect_components",
+    "set_input",
+    "simulate",
+    "generate_truth_table",
+    "validate_circuit",
+    "highlight_component",
+    "clear_highlights",
+    "reset_circuit"
+  ]
+}
