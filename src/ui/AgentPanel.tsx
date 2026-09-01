@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { useAgentActivityStore } from "../store/agentActivityStore";
 import "./AgentPanel.css";
@@ -31,6 +31,16 @@ export function AgentPanel() {
   const detail = useAgentActivityStore((s) => s.detail);
   const log = useAgentActivityStore((s) => s.log);
   const [open, setOpen] = useState(false);
+
+  // relativeTime() below is only recomputed on render; without this the drawer's "Ns ago"
+  // timestamps would visibly freeze the moment nothing else changes (e.g. an idle demo with
+  // the drawer left open) instead of counting up like a real live feed should.
+  const [, forceTick] = useState(0);
+  useEffect(() => {
+    if (!open) return;
+    const id = setInterval(() => forceTick((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [open]);
 
   return (
     <div className="agent-panel">
