@@ -13,7 +13,7 @@ Build and test a half adder.
 
 Watch gates appear on the canvas live, with a short violet pulse marking exactly what the agent just touched. The truth table panel fills in automatically. That's the whole idea: the agent isn't chatting about the circuit, it's editing the same one you can see and touch.
 
-**Note on browsers/agents:** WebMCP requires a client that actually supports it — today that's ChatGPT's desktop app/Atlas with an agent task, or Chrome with the WebMCP flag/origin trial enabled. If you test with a browsing agent that doesn't have WebMCP support yet, it will fall back to clicking around like a human — that's a client capability gap, not a LogicLab bug. The **WebMCP: Ready · 15 tools** badge (top-right of the lab view, click to expand) is real-time, verified proof of what's actually happening: it only says "Ready" after the page has genuinely confirmed all 15 tools via `document.modelContext.getTools()`, and every entry in its activity feed is a real tool call, not a script.
+**Note on browsers/agents:** WebMCP requires a client that actually supports it — today that's ChatGPT's in-app browser (built-in support), or Chrome with `chrome://flags/#enable-webmcp-testing` enabled. If you test with a browsing agent that doesn't have WebMCP support yet, it will fall back to clicking around like a human — that's a client capability gap, not a LogicLab bug. The **WebMCP: Ready · 15 tools** badge (top-right of the lab view, click to expand) is real-time, verified proof of what's actually happening: it only says "Ready" after the page has genuinely confirmed all 15 tools via `document.modelContext.getTools()`, and every entry in its activity feed is a real tool call, not a script.
 
 ## Things worth trying
 

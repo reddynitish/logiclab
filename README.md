@@ -31,7 +31,7 @@ That shared, live state — not a chat transcript describing a circuit — is th
 
 ## How to use LogicLab with an AI agent
 
-Open the [live app](https://reddynitish.github.io/logiclab/) in a **WebMCP-aware client** — today that's ChatGPT's desktop app / Atlas browser with a browsing/agent task, or Chrome with the WebMCP origin trial or `chrome://flags` experimental flag enabled. Then just ask it normally, in the same window the page is open in:
+Open the [live app](https://reddynitish.github.io/logiclab/) in a **WebMCP-aware client** — today that's ChatGPT's in-app browser (built-in support), or Chrome with `chrome://flags/#enable-webmcp-testing` enabled. Then just ask it normally, in the same window the page is open in:
 
 ```
 Build and test a half adder.
