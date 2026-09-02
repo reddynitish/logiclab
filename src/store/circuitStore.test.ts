@@ -45,6 +45,20 @@ describe("circuitStore: structural mutation", () => {
     expect(useCircuitStore.getState().circuit.wires).toHaveLength(0);
   });
 
+  it("connect rejects a missing/non-numeric toPort instead of silently creating a dead wire", () => {
+    // Regression: `undefined < 0` and `undefined >= maxPort` are both false, so a caller
+    // (e.g. a malformed WebMCP call missing toPort — the polyfill's testing shim invokes
+    // execute() with raw, unvalidated JSON, see webmcp/tools.tsx) used to slip past the
+    // range check and create a wire with toPort: undefined that never carries a signal.
+    const { addComponent, connect } = useCircuitStore.getState();
+    const a = addComponent("INPUT", { x: 0, y: 0 });
+    const g = addComponent("AND", { x: 100, y: 0 });
+    const result = connect(a, g, undefined as unknown as number);
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/toPort must be an integer/);
+    expect(useCircuitStore.getState().circuit.wires).toHaveLength(0);
+  });
+
   it("connect rejects an out-of-range port", () => {
     const { addComponent, connect } = useCircuitStore.getState();
     const a = addComponent("INPUT", { x: 0, y: 0 });
@@ -87,6 +101,23 @@ describe("circuitStore: structural mutation", () => {
     const id = useCircuitStore.getState().addComponent("AND", { x: 0, y: 0 });
     const result = useCircuitStore.getState().setInput(id, 1);
     expect(result.ok).toBe(false);
+  });
+
+  it("updateComponent rejects inputValue on non-INPUT components instead of silently ignoring it", () => {
+    const { addComponent, updateComponent } = useCircuitStore.getState();
+    const id = addComponent("AND", { x: 0, y: 0 });
+    const result = updateComponent(id, { inputValue: 1 });
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/not an INPUT/);
+    expect(useCircuitStore.getState().circuit.components.find((c) => c.id === id)?.inputValue).toBeUndefined();
+  });
+
+  it("updateComponent still allows inputValue on an INPUT component", () => {
+    const { addComponent, updateComponent } = useCircuitStore.getState();
+    const id = addComponent("INPUT", { x: 0, y: 0 });
+    const result = updateComponent(id, { inputValue: 1 });
+    expect(result.ok).toBe(true);
+    expect(useCircuitStore.getState().circuit.components.find((c) => c.id === id)?.inputValue).toBe(1);
   });
 
   it("toggleInput flips 0<->1", () => {

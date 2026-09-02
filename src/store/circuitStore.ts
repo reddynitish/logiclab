@@ -109,8 +109,12 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
 
   updateComponent: (id, patch) => {
     const state = get();
-    if (!state.circuit.components.some((c) => c.id === id)) {
+    const comp = state.circuit.components.find((c) => c.id === id);
+    if (!comp) {
       return { ok: false, error: `No component with id "${id}".` };
+    }
+    if (patch.inputValue !== undefined && comp.type !== "INPUT") {
+      return { ok: false, error: `Component "${id}" is a ${comp.type}, not an INPUT — inputValue can't be set on it.` };
     }
     set((s) => ({
       ...pushHistory(s),
@@ -130,6 +134,14 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
     if (!toComp) return { ok: false, error: `No component with id "${to}".` };
     if (!GATE_HAS_OUTPUT[fromComp.type]) {
       return { ok: false, error: `${fromComp.type} "${from}" has no output port to wire from.` };
+    }
+    // Nothing between here and the caller enforces the declared WebMCP input schema (the
+    // polyfill's testing shim invokes execute() with raw, unvalidated JSON — see
+    // webmcp/tools.tsx), so a missing/non-numeric toPort must fail loudly here rather than
+    // pass both range comparisons via `undefined < 0` / `undefined >= maxPort` (both false)
+    // and silently create a wire that never carries a signal.
+    if (typeof toPort !== "number" || !Number.isInteger(toPort)) {
+      return { ok: false, error: `toPort must be an integer, got ${JSON.stringify(toPort)}.` };
     }
     const maxPort = GATE_INPUT_COUNT[toComp.type];
     if (toPort < 0 || toPort >= maxPort) {

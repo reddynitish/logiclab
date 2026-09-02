@@ -1,7 +1,17 @@
 import type { Bit, Circuit } from "./types";
 import { generateTruthTable } from "./simulator";
 
-export type KnownFunction = "AND" | "OR" | "NOT" | "XOR" | "NAND" | "NOR" | "HALF_ADDER" | "FULL_ADDER";
+export type KnownFunction =
+  | "AND"
+  | "OR"
+  | "NOT"
+  | "XOR"
+  | "NAND"
+  | "NOR"
+  | "HALF_ADDER"
+  | "FULL_ADDER"
+  | "MUX_2TO1"
+  | "DECODER_2TO4";
 
 interface CanonicalSpec {
   inputNames: string[];
@@ -31,6 +41,16 @@ export const CANONICAL_FUNCTIONS: Record<KnownFunction, CanonicalSpec> = {
       const axorb = !!a !== !!x;
       return [b(axorb !== !!cin), b((!!a && !!x) || (!!cin && axorb))];
     },
+  },
+  MUX_2TO1: {
+    inputNames: ["A", "B", "Sel"],
+    outputNames: ["Y"],
+    eval: ([a, x, sel]) => [sel ? x : a],
+  },
+  DECODER_2TO4: {
+    inputNames: ["A", "B"],
+    outputNames: ["Y0", "Y1", "Y2", "Y3"],
+    eval: ([a, x]) => [b(!a && !x), b(!a && !!x), b(!!a && !x), b(!!a && !!x)],
   },
 };
 

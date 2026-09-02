@@ -9,7 +9,18 @@ import { EXAMPLES, getExample } from "../examples";
 import type { Bit, GateType } from "../logic/types";
 
 const GATE_TYPES: GateType[] = ["INPUT", "OUTPUT", "AND", "OR", "NOT", "XOR", "NAND", "NOR"];
-const KNOWN_FUNCTIONS: KnownFunction[] = ["AND", "OR", "NOT", "XOR", "NAND", "NOR", "HALF_ADDER", "FULL_ADDER"];
+const KNOWN_FUNCTIONS: KnownFunction[] = [
+  "AND",
+  "OR",
+  "NOT",
+  "XOR",
+  "NAND",
+  "NOR",
+  "HALF_ADDER",
+  "FULL_ADDER",
+  "MUX_2TO1",
+  "DECODER_2TO4",
+];
 const EXPECTED_TOOL_COUNT = 15;
 
 function labelsOf(store: ReturnType<typeof useCircuitStore.getState>) {
@@ -261,7 +272,7 @@ export function WebMCPTools() {
   useWebMCP({
     name: "validate_circuit",
     description:
-      "Check whether the circuit correctly implements a named function (AND, OR, NOT, XOR, NAND, NOR, HALF_ADDER, FULL_ADDER) across every input combination. The comparison is exact, code-computed truth-table matching — not a guess — and returns the specific input rows where the circuit's behavior diverges from the expected function, so you can pinpoint what's wrong.",
+      "Check whether the circuit correctly implements a named function (AND, OR, NOT, XOR, NAND, NOR, HALF_ADDER, FULL_ADDER, MUX_2TO1, DECODER_2TO4) across every input combination. The comparison is exact, code-computed truth-table matching — not a guess — and returns the specific input rows where the circuit's behavior diverges from the expected function, so you can pinpoint what's wrong.",
     inputSchema: {
       type: "object",
       properties: { targetFunction: { type: "string", enum: KNOWN_FUNCTIONS } },

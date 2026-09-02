@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Circuit } from "./types";
 import { validateAgainstKnownFunction } from "./validators";
 import { binaryGateCircuit, fullAdder, halfAdder } from "./simulator.test";
+import { getExample } from "../examples";
 
 describe("validateAgainstKnownFunction", () => {
   it("confirms a correct XOR circuit", () => {
@@ -43,6 +44,20 @@ describe("validateAgainstKnownFunction", () => {
     const result = validateAgainstKnownFunction(circuit, "XOR");
     expect(result.matches).toBe(false);
     expect(result.reason).toMatch(/needs exactly 2 input/);
+  });
+
+  it("confirms the built-in 2:1 MUX example against MUX_2TO1", () => {
+    const circuit = getExample("mux-2to1")!.build();
+    const result = validateAgainstKnownFunction(circuit, "MUX_2TO1");
+    expect(result.matches).toBe(true);
+    expect(result.mismatches).toHaveLength(0);
+  });
+
+  it("confirms the built-in 2-to-4 decoder example against DECODER_2TO4", () => {
+    const circuit = getExample("decoder-2to4")!.build();
+    const result = validateAgainstKnownFunction(circuit, "DECODER_2TO4");
+    expect(result.matches).toBe(true);
+    expect(result.mismatches).toHaveLength(0);
   });
 
   it("maps ports by label when present, in any declaration order", () => {
