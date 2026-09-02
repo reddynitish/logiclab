@@ -63,6 +63,12 @@ function App() {
             </div>
           </div>
           <StatusBar />
+          <div className="app__narrow-notice">
+            <p>
+              LogicLab's circuit editor needs more room than this screen has to work with. Try widening
+              your browser window, or open it on a laptop or desktop.
+            </p>
+          </div>
         </div>
       )}
     </div>

@@ -41,3 +41,33 @@
     width: 260px;
   }
 }
+
+.app__narrow-notice {
+  display: none;
+}
+
+/* Below this width the palette + canvas + inspector three-column layout has no room
+   left for the canvas itself (see design notes: LogicLab targets laptop/desktop screens,
+   not phones). Rather than ship a visibly broken squeezed layout, show a plain, honest
+   notice instead — cheap and safe this close to a deadline, versus a real responsive
+   redesign of the editor chrome. */
+@media (max-width: 640px) {
+  .app__lab > *:not(.app__narrow-notice) {
+    display: none;
+  }
+  .app__narrow-notice {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    text-align: center;
+    background: var(--bg-app);
+  }
+  .app__narrow-notice p {
+    max-width: 320px;
+    color: var(--text-secondary);
+    font-size: var(--text-md);
+    line-height: 1.5;
+  }
+}

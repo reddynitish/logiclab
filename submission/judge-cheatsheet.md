@@ -27,7 +27,7 @@ Watch gates appear on the canvas live, with a short violet pulse marking exactly
 ## What to look at in the code
 
 - `src/webmcp/tools.tsx` — all 15 WebMCP tools, each with a structured JSON-Schema input and a structured return value.
-- `src/logic/simulator.ts` and `src/logic/validators.ts` — the deterministic circuit engine; `src/logic/*.test.ts` — 80+ passing tests. Digital logic is never computed by an LLM here, only acted on.
+- `src/logic/simulator.ts` and `src/logic/validators.ts` — the deterministic circuit engine; `src/logic/*.test.ts` — 90+ passing tests. Digital logic is never computed by an LLM here, only acted on.
 - `src/store/circuitStore.ts` — the single zustand store both the canvas and every WebMCP tool read/write, which is *why* human and agent edits stay in sync.
 
 ## Judging-criteria map
@@ -36,6 +36,6 @@ Watch gates appear on the canvas live, with a short violet pulse marking exactly
 |---|---|
 | Usefulness | Real intro-digital-design workflow (build/test/debug/validate), not a toy |
 | Originality | Human and agent editing the *same live circuit*, not chat-about-a-circuit |
-| Execution | 80+ unit tests on the deterministic core, CI on every push, deployed build |
+| Execution | 90+ unit tests on the deterministic core, CI on every push, deployed build |
 | Thoughtful WebMCP use | 15 purposeful tools, structured I/O, graceful errors, live UI sync — see `src/webmcp/tools.tsx` |
 | Human+agent experience | Try scenario 4 above — move a gate while the agent is working |

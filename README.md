@@ -76,7 +76,7 @@ Digital logic is deterministic. Every gate evaluation, every truth table, every 
 | `set_input` | Drive an INPUT high or low. |
 | `simulate` | Recompute every signal and report wiring issues (cycles, floating inputs, doubled drivers). |
 | `generate_truth_table` | Exercise every input combination at once. |
-| `validate_circuit` | Compare against a known function (AND…FULL_ADDER) with exact failing rows. |
+| `validate_circuit` | Compare against a known function (AND, OR, NOT, XOR, NAND, NOR, HALF_ADDER, FULL_ADDER, MUX_2TO1, DECODER_2TO4) with exact failing rows. |
 | `highlight_component` / `clear_highlights` | Point at specific gates/wires while explaining a problem. |
 | `reset_circuit` | Clear the canvas. |
 
@@ -113,7 +113,7 @@ npm run dev       # http://localhost:5173
 ## Testing
 
 ```bash
-npx vitest run    # 80+ tests: every gate, half/full adder, cycle/floating-input/multiple-driver
+npx vitest run    # 90+ tests: every gate, half/full adder, cycle/floating-input/multiple-driver
                    # detection, truth-table generation, known-function validation, store actions,
                    # built-in example correctness, and the agent-activity feed
 npx tsc -b --noEmit

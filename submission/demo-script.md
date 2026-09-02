@@ -1,38 +1,57 @@
-# LogicLab — 3-Minute Demo Script
+# LogicLab — Demo Video Script (target: 2:30–2:50)
 
-**Setup before recording:** browser open to https://reddynitish.github.io/logiclab/, a WebMCP-aware agent (ChatGPT with WebMCP/site tools, or an MCP client pointed at the page) connected and ready to prompt. Canvas empty or on the landing page.
+Devpost requires a public YouTube video, under 3 minutes, with audio, covering what you built and how you used WebMCP. This script is timed to land comfortably under that limit.
+
+**Setup before recording:**
+- Live app open: https://reddynitish.github.io/logiclab/
+- A WebMCP-capable client ready in the same window — ChatGPT's in-app browser (or the desktop app pointed at the page), or Chrome with `chrome://flags/#enable-webmcp-testing` enabled.
+- Screen recorder with system + mic audio armed.
+- Rehearse once — the agent's exact wording back to you will vary run to run; the visuals below don't.
 
 ---
 
-### 0:00–0:15 — The problem, fast
-> "Digital logic students spend half their time on wiring mechanics, not logic. A chatbot next to a circuit simulator can talk about your circuit — it can't touch it. LogicLab is a circuit editor where an AI agent has real hands on the same canvas you do, through WebMCP."
+### 0:00–0:15 — Problem (voice over the landing page)
+> "Circuit simulators for digital logic are entirely manual — there's no way to ask them anything. And a chatbot next to one can't actually touch your circuit. LogicLab fixes that: it's a circuit editor where an AI agent has real hands on the same canvas you do, through WebMCP."
 
-Click **Open Lab**. Show the empty canvas, palette, and truth table panel for 3 seconds — this is a real, usable editor with nothing running yet.
+Show the landing page for a beat — headline, the 3-step explainer, the "Ask your agent" line.
 
-### 0:15–0:35 — Prove it's a real manual editor first
-Drag an AND gate and two INPUT terminals onto the canvas by hand. Wire them. Toggle both inputs to 1, show the output LED light up. This establishes: *no AI required to be useful.*
+### 0:15–0:30 — Prove it's a real editor, WebMCP is live
+Click **Open Lab**. Point out the **WebMCP: Ready · 15 tools** badge top-right. Click it briefly to show the empty activity feed — "nothing's happened yet, this updates live."
 
-Clear the canvas (Reset button).
+### 0:30–1:10 — Build (through WebMCP only)
+Type into your agent, in the same window:
+```
+Using LogicLab's WebMCP tools, build a half adder and prove it works.
+```
+Narrate while it runs: gates and wires appear on the canvas with a violet pulse — that's `add_component`/`connect_components` landing on the exact store the canvas renders from, live. Cut to the activity feed drawer open, scrolling as calls come in.
 
-### 0:35–1:10 — Demo A: Build
-Prompt the agent: **"Build a half adder."**
+### 1:10–1:35 — Truth table
+The agent calls `generate_truth_table`; show the panel filling in — all 4 rows (00→0,0 / 01→1,0 / 10→1,0 / 11→0,1), correct.
 
-Narrate while it runs: watch gates appear on the canvas one at a time with a violet pulse — that's the agent's `add_component`/`connect_components` calls landing on the exact same store the canvas renders from, live, not a replay. When it finishes, the agent calls `generate_truth_table` and reports all 4 rows correct (00→0,0 / 01→1,0 / 10→1,0 / 11→0,1). Point at the truth table panel updating on screen simultaneously.
+### 1:35–2:05 — Break it, then debug (through WebMCP only)
+Manually swap a gate or disconnect a wire on the half adder (mouse click — show it's really you, not the agent). Then type:
+```
+Why isn't my half adder working? Diagnose it and fix it.
+```
+Show, in order: the agent reading `get_circuit_state`/`validate_circuit`, the faulty gate glowing amber via `highlight_component` with its reason text, then the repair landing (`remove_component`/`add_component`/`connect_components`) and `validate_circuit` running again.
 
-### 1:10–1:35 — Demo B: Build something bigger
-Prompt: **"Now build a full adder next to it."**
+### 2:05–2:25 — Validate again, show PASS
+Cut to the Truth Table panel's **PASS — matches HALF_ADDER** banner. This is exact code-computed truth-table matching, not an LLM's guess.
 
-Let it run largely unnarrated — 10 components, 12 wires — then cut to the finished, tested circuit. Mention: "This is still fully yours — drag any gate right now and the agent will see the new position on its next read."
+### 2:25–2:45 — Close
+> "Every gate evaluation in LogicLab is plain, tested TypeScript — the agent never calculates logic, it only acts on a circuit that's always correct. WebMCP is what lets it act at all, on the exact same canvas you're looking at. That's LogicLab."
 
-### 1:35–2:20 — Demo C: Debug (the headline moment)
-Manually break something: disconnect a wire on the half adder, or swap a gate (e.g. delete the XOR, add an OR in its place, rewire it in). Prompt: **"Why isn't my half adder working?"**
+Show the landing page one last time: **Build circuits with your AI.**
 
-Narrate the agent's process as it happens: it calls `get_circuit_state`, calls `generate_truth_table`, spots the mismatching rows, calls `highlight_component` — show the faulty gate glow amber on screen — and explains the specific error in plain language ("the Sum gate is OR, but Sum should be XOR — OR gives 1 when both inputs are 1, XOR should give 0"). Ask: **"Fix it."** Watch it repair the gate and re-verify with `generate_truth_table`, now passing.
+---
 
-### 2:20–2:45 — Demo D: Validate
-Prompt: **"Does this circuit implement XOR?"** on a different, freshly-loaded circuit (e.g. load the AND-gate example). Agent calls `validate_circuit({targetFunction:"XOR"})`, reports **FAIL** with the exact mismatching input rows, computed against a hand-written deterministic reference implementation — not an LLM guess at Boolean algebra.
+## Exact prompts to type during recording
 
-### 2:45–3:00 — Close
-> "Every gate evaluation and every validation in LogicLab is plain, tested TypeScript — the AI never calculates logic, it only acts on a circuit that's always correct. WebMCP is what lets it act at all. That's LogicLab."
+1. `Using LogicLab's WebMCP tools, build a half adder and prove it works.`
+2. *(after manually breaking the circuit)* `Why isn't my half adder working? Diagnose it and fix it.`
+3. Optional stretch, if time allows in a longer cut: `Does this circuit implement XOR?` on a circuit that doesn't, to show `validate_circuit`'s FAIL path with exact failing rows.
 
-Show the landing page one last time with the headline: *Build circuits with your AI.*
+## After recording
+
+1. Upload to YouTube as **Public** (not Unlisted — Devpost requires a public video).
+2. Paste the URL into `submission/devpost-fields.md` → Demo video URL, and into the Devpost submission form.
