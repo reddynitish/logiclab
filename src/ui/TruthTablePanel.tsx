@@ -2,11 +2,9 @@ import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { useCircuitStore } from "../store/circuitStore";
 import { generateTruthTable, type TruthTable } from "../logic/simulator";
-import { validateAgainstKnownFunction, type KnownFunction, type ValidationResult } from "../logic/validators";
+import { validateAgainstKnownFunction, KNOWN_FUNCTIONS, type KnownFunction, type ValidationResult } from "../logic/validators";
 import type { Circuit } from "../logic/types";
 import "./TruthTablePanel.css";
-
-const KNOWN_FUNCTIONS: KnownFunction[] = ["AND", "OR", "NOT", "XOR", "NAND", "NOR", "HALF_ADDER", "FULL_ADDER"];
 
 interface Computed<T> {
   circuit: Circuit;

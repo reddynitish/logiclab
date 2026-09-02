@@ -54,6 +54,16 @@ export const CANONICAL_FUNCTIONS: Record<KnownFunction, CanonicalSpec> = {
   },
 };
 
+/**
+ * The single source of truth for "every known function validate_circuit accepts" — derived
+ * from CANONICAL_FUNCTIONS' own keys rather than hand-maintained elsewhere, so the WebMCP
+ * tool schema and the UI's "Validate against" dropdown can never drift out of sync with each
+ * other or with what this module actually implements (they previously did: a function was
+ * added here and to the WebMCP tool's enum but not to the UI, so the dropdown silently
+ * couldn't offer it even though calling validate_circuit with it worked).
+ */
+export const KNOWN_FUNCTIONS = Object.keys(CANONICAL_FUNCTIONS) as KnownFunction[];
+
 export interface ValidationMismatch {
   inputs: Record<string, Bit>;
   expected: Record<string, Bit>;

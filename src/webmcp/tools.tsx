@@ -4,23 +4,11 @@ import { useCircuitStore } from "../store/circuitStore";
 import { useAgentActivityStore } from "../store/agentActivityStore";
 import { simulate } from "../logic/simulator";
 import { generateTruthTable } from "../logic/simulator";
-import { validateAgainstKnownFunction, type KnownFunction } from "../logic/validators";
+import { validateAgainstKnownFunction, KNOWN_FUNCTIONS, type KnownFunction } from "../logic/validators";
 import { EXAMPLES, getExample } from "../examples";
 import type { Bit, GateType } from "../logic/types";
 
 const GATE_TYPES: GateType[] = ["INPUT", "OUTPUT", "AND", "OR", "NOT", "XOR", "NAND", "NOR"];
-const KNOWN_FUNCTIONS: KnownFunction[] = [
-  "AND",
-  "OR",
-  "NOT",
-  "XOR",
-  "NAND",
-  "NOR",
-  "HALF_ADDER",
-  "FULL_ADDER",
-  "MUX_2TO1",
-  "DECODER_2TO4",
-];
 const EXPECTED_TOOL_COUNT = 15;
 
 function labelsOf(store: ReturnType<typeof useCircuitStore.getState>) {
