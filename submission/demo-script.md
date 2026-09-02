@@ -33,10 +33,10 @@ Manually swap a gate or disconnect a wire on the half adder (mouse click — sho
 ```
 Why isn't my half adder working? Diagnose it and fix it.
 ```
-Show, in order: the agent reading `get_circuit_state`/`validate_circuit`, the faulty gate glowing amber via `highlight_component` with its reason text, then the repair landing (`remove_component`/`add_component`/`connect_components`) and `validate_circuit` running again.
+Show, in order: the agent reading `get_circuit_state`/`validate_circuit`, the faulty gate glowing amber via `highlight_component` with its reason text, then the repair landing (`remove_component`/`add_component`/`connect_components`) and `validate_circuit` running again — narrate that its returned result (visible in the chat reply, and logged in the activity drawer) already says `matches: true`.
 
 ### 2:05–2:25 — Validate again, show PASS
-Cut to the Truth Table panel's **PASS — matches HALF_ADDER** banner. This is exact code-computed truth-table matching, not an LLM's guess.
+Now click the Truth Table panel's **Validate against → HALF_ADDER** dropdown yourself — this is the same check, but instant and human-driven, so the audience sees the **PASS — matches HALF_ADDER** banner appear live on screen, not just described in the agent's chat reply. Point out: exact code-computed truth-table matching, not an LLM's guess, and anyone watching the circuit — human or agent — gets the same answer.
 
 ### 2:25–2:45 — Close
 > "Every gate evaluation in LogicLab is plain, tested TypeScript — the agent never calculates logic, it only acts on a circuit that's always correct. WebMCP is what lets it act at all, on the exact same canvas you're looking at. That's LogicLab."

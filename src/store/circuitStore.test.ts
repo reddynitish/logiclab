@@ -153,6 +153,32 @@ describe("circuitStore: undo/redo", () => {
   });
 });
 
+describe("circuitStore: structureVersion", () => {
+  it("bumps on structural changes (add/connect/setInput/etc)", () => {
+    const before = useCircuitStore.getState().structureVersion;
+    const id = useCircuitStore.getState().addComponent("INPUT", { x: 0, y: 0 });
+    expect(useCircuitStore.getState().structureVersion).toBe(before + 1);
+    useCircuitStore.getState().setInput(id, 1);
+    expect(useCircuitStore.getState().structureVersion).toBe(before + 2);
+  });
+
+  it("does NOT bump on cosmetic-only changes (highlight/clearHighlights/markAiTouched)", () => {
+    // Regression: TruthTablePanel used to cache a generated table/validation result keyed
+    // by circuit object identity. highlight()/clearHighlights()/markAiTouched() all replace
+    // that object too (cosmetic flags live on the same components/wires), which invalidated
+    // a still-accurate PASS/FAIL banner the instant an agent called highlight_component —
+    // exactly what happens in the headline debug demo. structureVersion must stay put here
+    // so a UI keyed off it doesn't throw away a result nothing simulation-relevant changed.
+    const id = useCircuitStore.getState().addComponent("AND", { x: 0, y: 0 });
+    const before = useCircuitStore.getState().structureVersion;
+    useCircuitStore.getState().highlight([id], [], "looks wrong");
+    useCircuitStore.getState().clearHighlights();
+    useCircuitStore.getState().markAiTouched([id], []);
+    useCircuitStore.getState().select(id);
+    expect(useCircuitStore.getState().structureVersion).toBe(before);
+  });
+});
+
 describe("circuitStore: agent presence + highlighting", () => {
   it("markAiTouched sets the flag then clears it after the pulse window", () => {
     vi.useFakeTimers();

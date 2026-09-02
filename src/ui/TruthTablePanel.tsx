@@ -3,31 +3,35 @@ import clsx from "clsx";
 import { useCircuitStore } from "../store/circuitStore";
 import { generateTruthTable, type TruthTable } from "../logic/simulator";
 import { validateAgainstKnownFunction, KNOWN_FUNCTIONS, type KnownFunction, type ValidationResult } from "../logic/validators";
-import type { Circuit } from "../logic/types";
 import "./TruthTablePanel.css";
 
 interface Computed<T> {
-  circuit: Circuit;
+  structureVersion: number;
   value: T;
 }
 
 export function TruthTablePanel() {
   const circuit = useCircuitStore((s) => s.circuit);
+  const structureVersion = useCircuitStore((s) => s.structureVersion);
   const [open, setOpen] = useState(true);
   const [computedTable, setComputedTable] = useState<Computed<TruthTable> | null>(null);
   const [computedValidation, setComputedValidation] = useState<Computed<ValidationResult> | null>(null);
   const [target, setTarget] = useState<KnownFunction | "">("");
 
-  // Any circuit edit — human or agent — can invalidate a previously generated table, so a
-  // result is only ever shown if it was computed from the exact circuit on screen right now.
-  // Comparing by reference (not an effect) keeps this a pure render-time derivation.
-  const table = computedTable?.circuit === circuit ? computedTable.value : null;
-  const validation = computedValidation?.circuit === circuit ? computedValidation.value : null;
+  // A structural edit (topology, an INPUT's value, undo/redo — anything that could change
+  // what simulate() reports) invalidates a previously generated result. Keying off
+  // structureVersion rather than `circuit` object identity matters: highlight_component/
+  // clearHighlights/markAiTouched all replace the circuit object too (cosmetic flags live
+  // on the same components), so identity comparison would hide a still-accurate PASS/FAIL
+  // banner the moment an agent highlights the very gate the banner is talking about —
+  // exactly what happens in the debug demo this app is built around.
+  const table = computedTable?.structureVersion === structureVersion ? computedTable.value : null;
+  const validation = computedValidation?.structureVersion === structureVersion ? computedValidation.value : null;
 
   const labelOf = (id: string) => circuit.components.find((c) => c.id === id)?.label || id;
 
   const onGenerate = () => {
-    setComputedTable({ circuit, value: generateTruthTable(circuit) });
+    setComputedTable({ structureVersion, value: generateTruthTable(circuit) });
   };
 
   const onValidate = (value: string) => {
@@ -37,8 +41,8 @@ export function TruthTablePanel() {
       setComputedValidation(null);
       return;
     }
-    setComputedValidation({ circuit, value: validateAgainstKnownFunction(circuit, fn) });
-    setComputedTable({ circuit, value: generateTruthTable(circuit) });
+    setComputedValidation({ structureVersion, value: validateAgainstKnownFunction(circuit, fn) });
+    setComputedTable({ structureVersion, value: generateTruthTable(circuit) });
   };
 
   const mismatchKeys = useMemo(() => {

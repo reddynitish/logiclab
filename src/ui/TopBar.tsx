@@ -12,6 +12,11 @@ export function TopBar({ onGoHome }: { onGoHome: () => void }) {
   const past = useCircuitStore((s) => s.past);
   const future = useCircuitStore((s) => s.future);
   const [flash, setFlash] = useState<string | null>(null);
+  // Bumped on every pick to remount the <select> back to its placeholder afterward — a
+  // plain HTML select doesn't fire onChange when you pick the option that's already
+  // selected, so without this a student who breaks the loaded example can't reload the
+  // same one from the dropdown a second time.
+  const [pickKey, setPickKey] = useState(0);
 
   const say = (msg: string) => {
     setFlash(msg);
@@ -23,6 +28,7 @@ export function TopBar({ onGoHome }: { onGoHome: () => void }) {
     const example = EXAMPLES.find((e) => e.id === id);
     if (!example) return;
     useCircuitStore.getState().loadCircuit(example.build(), example.name);
+    setPickKey((k) => k + 1);
   };
 
   const onSave = () => {
@@ -55,7 +61,7 @@ export function TopBar({ onGoHome }: { onGoHome: () => void }) {
 
       <label className="topbar__examples">
         <span>Example</span>
-        <select defaultValue="" onChange={(e) => onExamplePick(e.target.value)}>
+        <select key={pickKey} defaultValue="" onChange={(e) => onExamplePick(e.target.value)}>
           <option value="">Load example…</option>
           {EXAMPLES.map((ex) => (
             <option key={ex.id} value={ex.id}>

@@ -68,6 +68,9 @@ function App() {
               LogicLab's circuit editor needs more room than this screen has to work with. Try widening
               your browser window, or open it on a laptop or desktop.
             </p>
+            <button type="button" className="app__narrow-notice-back" onClick={() => setView("landing")}>
+              ← Back
+            </button>
           </div>
         </div>
       )}

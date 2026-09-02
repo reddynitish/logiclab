@@ -46,17 +46,19 @@
   display: none;
 }
 
-/* Below this width the palette + canvas + inspector three-column layout has no room
-   left for the canvas itself (see design notes: LogicLab targets laptop/desktop screens,
-   not phones). Rather than ship a visibly broken squeezed layout, show a plain, honest
-   notice instead — cheap and safe this close to a deadline, versus a real responsive
-   redesign of the editor chrome. */
-@media (max-width: 640px) {
+/* Below this width the palette (220px fixed) + inspector rail (260-300px fixed) leave
+   too little room for the canvas to be usable (see design notes: LogicLab targets
+   laptop/desktop screens, not phones/narrow tablets). Rather than ship a visibly broken
+   squeezed layout, show a plain, honest notice instead — cheap and safe this close to a
+   deadline, versus a real responsive redesign of the editor chrome. */
+@media (max-width: 900px) {
   .app__lab > *:not(.app__narrow-notice) {
     display: none;
   }
   .app__narrow-notice {
     display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
     height: 100%;
     align-items: center;
     justify-content: center;
@@ -69,5 +71,17 @@
     color: var(--text-secondary);
     font-size: var(--text-md);
     line-height: 1.5;
+  }
+  .app__narrow-notice-back {
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-strong);
+    background: var(--bg-inset);
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+    cursor: pointer;
+  }
+  .app__narrow-notice-back:hover {
+    background: var(--bg-panel-hover);
   }
 }

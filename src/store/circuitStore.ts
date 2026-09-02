@@ -22,6 +22,17 @@ export interface CircuitState {
   exampleName: string | null;
   past: HistoryEntry[];
   future: HistoryEntry[];
+  /**
+   * Bumped on every change that can affect simulation results (topology, an INPUT's
+   * value, undo/redo) — NOT on cosmetic-only changes (select/highlight/clearHighlights/
+   * markAiTouched), which replace the circuit object but change nothing simulate() reads.
+   * Consumers that cache a derived result (e.g. TruthTablePanel's generated table) should
+   * key their cache off this, not off `circuit` object identity — that reference changes
+   * on every action, cosmetic ones included, so identity comparison invalidates a cached
+   * result (like a still-relevant PASS/FAIL banner) the moment an agent calls
+   * highlight_component, which is exactly the debug-flow demo this app is built around.
+   */
+  structureVersion: number;
 
   // --- derived ---
   simulation: () => SimulationResult;
@@ -70,6 +81,7 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
   exampleName: null,
   past: [],
   future: [],
+  structureVersion: 0,
 
   simulation: () => simulate(get().circuit),
 
@@ -87,6 +99,7 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
     set((state) => ({
       ...pushHistory(state),
       circuit: { ...state.circuit, components: [...state.circuit.components, comp] },
+      structureVersion: state.structureVersion + 1,
     }));
     return id;
   },
@@ -103,6 +116,7 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
         wires: s.circuit.wires.filter((w) => w.from !== id && w.to !== id),
       },
       selectedId: s.selectedId === id ? null : s.selectedId,
+      structureVersion: s.structureVersion + 1,
     }));
     return { ok: true };
   },
@@ -122,6 +136,7 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
         ...s.circuit,
         components: s.circuit.components.map((c) => (c.id === id ? { ...c, ...patch } : c)),
       },
+      structureVersion: s.structureVersion + 1,
     }));
     return { ok: true };
   },
@@ -162,6 +177,7 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
     set((s) => ({
       ...pushHistory(s),
       circuit: { ...s.circuit, wires: [...s.circuit.wires, wire] },
+      structureVersion: s.structureVersion + 1,
     }));
     return { ok: true, wireId };
   },
@@ -174,6 +190,7 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
     set((s) => ({
       ...pushHistory(s),
       circuit: { ...s.circuit, wires: s.circuit.wires.filter((w) => w.id !== wireId) },
+      structureVersion: s.structureVersion + 1,
     }));
     return { ok: true };
   },
@@ -189,6 +206,7 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
         ...s.circuit,
         components: s.circuit.components.map((c) => (c.id === id ? { ...c, inputValue: value } : c)),
       },
+      structureVersion: s.structureVersion + 1,
     }));
     return { ok: true };
   },
@@ -201,11 +219,23 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
   },
 
   clearCircuit: () => {
-    set((s) => ({ ...pushHistory(s), circuit: emptyCircuit(), exampleName: null, selectedId: null }));
+    set((s) => ({
+      ...pushHistory(s),
+      circuit: emptyCircuit(),
+      exampleName: null,
+      selectedId: null,
+      structureVersion: s.structureVersion + 1,
+    }));
   },
 
   loadCircuit: (circuit, name = null) => {
-    set((s) => ({ ...pushHistory(s), circuit: cloneCircuit(circuit), exampleName: name, selectedId: null }));
+    set((s) => ({
+      ...pushHistory(s),
+      circuit: cloneCircuit(circuit),
+      exampleName: name,
+      selectedId: null,
+      structureVersion: s.structureVersion + 1,
+    }));
   },
 
   undo: () => {
@@ -216,6 +246,7 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
       circuit: prev.circuit,
       past: state.past.slice(0, -1),
       future: [{ circuit: state.circuit }, ...state.future].slice(0, HISTORY_LIMIT),
+      structureVersion: state.structureVersion + 1,
     });
   },
 
@@ -227,6 +258,7 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
       circuit: next.circuit,
       future: state.future.slice(1),
       past: [...state.past, { circuit: state.circuit }].slice(-HISTORY_LIMIT),
+      structureVersion: state.structureVersion + 1,
     });
   },
 
